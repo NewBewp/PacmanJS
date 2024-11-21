@@ -6,6 +6,7 @@ class Pacman {
         this.height = height;
         this.speed = speed;
         this.direction = DIRECTION_RIGHT;
+        this.nextDirection = this.direction
         this.currentFrame = 1;
         this.frameCount = 7;
 
@@ -16,12 +17,13 @@ class Pacman {
 
     moveProcess() {
         //todo
-        this.changeDirectionIfPossible()
-        this.moveForwards();
-        if (this.checkCollistion()) {
-            this.moveBackwards();
+        this.changeDirectionIfPossible(); // Ensure direction can change
+        this.moveForwards(); // Move in the current direction
+        if (this.checkCollisions()) {
+            this.moveBackwards(); // Move back if collision occurs
             return;
         }
+        
     }
 
     eat() {
@@ -61,20 +63,41 @@ class Pacman {
         }
     }
 
-    checkCollistion() {
+    checkCollisions() {
+        let isCollided = false;
         if (
-            map[this.getMapY()][this.getMapX()] == 1 ||
-            map[this.getMapYRightSide()][this.getMapXRightSide()] == 1 ||
-            map[this.getMapY()][this.getMapXRightSide()] == 1 ||
-            map[this.getMapYRightSide()][this.getMapXRightSide()] == 1
+            map[parseInt(this.y / oneBlockSize)][
+                parseInt(this.x / oneBlockSize)
+            ] == 1 ||
+            map[parseInt(this.y / oneBlockSize + 0.9999)][
+                parseInt(this.x / oneBlockSize)
+            ] == 1 ||
+            map[parseInt(this.y / oneBlockSize)][
+                parseInt(this.x / oneBlockSize + 0.9999)
+            ] == 1 ||
+            map[parseInt(this.y / oneBlockSize + 0.9999)][
+                parseInt(this.x / oneBlockSize + 0.9999)
+            ] == 1
         ) {
-            return true;
+            isCollided = true;
         }
-        return false;
+        return isCollided;
     }
-    checkGhostCollistion() { }
 
-    changeDirectionIfPossible() { }
+    checkGhostCollistion() {}
+    
+    changeDirectionIfPossible() {
+        if (this.direction == this.nextDirection) return;
+        let tempDirection = this.direction;
+        this.direction = this.nextDirection;
+        this.moveForwards();
+        if (this.checkCollisions()) {
+            this.moveBackwards();
+            this.direction = tempDirection;
+        } else {
+            this.moveBackwards();
+        }
+    }
 
     changeAnimation() {
         this.currentFrame = this.currentFrame == this.frameCount ? 1 : this.currentFrame + 1;
@@ -86,21 +109,34 @@ class Pacman {
             this.x + oneBlockSize / 2,
             this.y + oneBlockSize / 2
         );
-        canvasContext.rotate((this.direction * 90 * Math.PI) / 180);
-
-        canvasContext.translate(
-            -this.x - oneBlockSize / 2,
-            -this.y - oneBlockSize / 2
-        );
-
+        // canvasContext.rotate((this.direction * 90 * Math.PI) / 180);
+        // canvasContext.translate(
+        //     -this.x - oneBlockSize / 2,
+        //     -this.y - oneBlockSize / 2
+        // );
+        switch (this.direction) {
+            case DIRECTION_RIGHT:
+                canvasContext.scale(1, 1); // Không xoay
+                break;
+            case DIRECTION_LEFT:
+                canvasContext.scale(-1, 1);  // Xoay 180 độ
+                break;
+            case DIRECTION_UP:
+                canvasContext.rotate(-Math.PI / 2); // Xoay 90 độ
+                break;
+            case DIRECTION_BOTTOM:
+                canvasContext.rotate(Math.PI / 2); // Xoay 270 độ
+                break;
+        }
+        
         canvasContext.drawImage(
             pacmanFrames,
-            (this.currentFrame - 1) / oneBlockSize,
+            (this.currentFrame - 1) * oneBlockSize,
             0,
             oneBlockSize,
             oneBlockSize,
-            this.x,
-            this.y,
+            -this.width / 2, // Vị trí x
+            -this.height / 2, // Vị trí y
             this.width,
             this.height
         );

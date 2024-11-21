@@ -10,6 +10,7 @@ let createRect = (x, y, width, height, color) => {
 }
 
 let fps = 30;
+// let pacman;s
 let oneBlockSize = 20;
 let wallColor = "#342DCA";
 let wallSpaceWidth = oneBlockSize / 1.5;
@@ -55,7 +56,7 @@ let gameLoop = () => {
 let update = () => {
     //todo
     pacman.moveProcess();
-    pacman.draw();
+   
 };
 
 let draw = () => {
@@ -142,3 +143,18 @@ let createNewPacman = () =>{
 
 createNewPacman();
 gameLoop()
+
+window.addEventListener("keydown",(event)=>{
+    let k = event.keyCode;
+    setTimeout(()=>{
+        if(k == 37 || k == 65){ // left
+            pacman.nextDirection = DIRECTION_LEFT;
+        }else if(k == 38 || k == 87){ // up
+            pacman.nextDirection = DIRECTION_UP;
+        }else if(k == 39 || k == 68){ // right
+            pacman.nextDirection = DIRECTION_RIGHT;
+        }else if(k == 40 || k == 83){ // down
+            pacman.nextDirection = DIRECTION_BOTTOM;
+        }
+    },1)
+})
