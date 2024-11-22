@@ -5,35 +5,53 @@ class Ghost {
         this.width = width;
         this.height = height;
         this.speed = speed;
-        this.direction = 4;
-        this.nextDirection = 4;
-        this.frameCount = 7;
-        this.currentFrame = 1;
+        this.direction = DIRECTION_RIGHT;
         this.imageX = imageX;
         this.imageY = imageY;
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
         this.range = range;
-        this.randomTargetIndex = parseInt(Math.random() * randomTargetsForGhost.length);
+        this.randomTargetIndex = parseInt(Math.random() * 4);
+        this.target = randomTargetsForGhost[this.randomTargetIndex];
 
         setInterval(() => {
             this.changeRandomDirection();
         }, 10000);
     }
 
+
+    isInRange() {
+        let xDistance = Math.abs(pacman.getMapX() - this.getMapX());
+        let yDistance = Math.abs(pacman.getMapY() - this.getMapY());
+        if (
+            Math.sqrt(xDistance * xDistance + yDistance * yDistance) <= 
+            this.range
+        ) {
+            return true;
+        }
+        return false;
+    }
    
+    changeRandomDirection() {
+        let addition = 1;
+        this.randomTargetIndex += addition;
+        this.randomTargetIndex = this.randomTargetIndex % 4;
+    }
 
     moveProcesss() {
-        debugger;
-        if (this.isInRangeOfPacman()) {
-            this.target = pacman;
+        if (this.isInRange()) {
+            this.target = pacman; // Nếu ghost ở gần Pacman, hướng về Pacman
         } else {
-            this.target = randomTargetsForGhost[this.randomTargetIndex];
+            this.target = randomTargetsForGhost[this.randomTargetIndex]; // Nếu không, hướng về mục tiêu ngẫu nhiên
         }
+    
+        // Tính toán hướng di chuyển
         this.changeDirectionIfPossible();
-        this.moveForwards();
+        this.moveForwards(); // Di chuyển về phía mục tiêu
+    
+        // Kiểm tra va chạm
         if (this.checkCollisions()) {
-            this.moveBackwards();
+            this.moveBackwards(); // Nếu va chạm, di chuyển ngược lại
             return;
         }
     }
@@ -106,20 +124,6 @@ class Ghost {
         return false;
     }
 
-    isInRangeOfPacman() {
-        let xDistance = Math.abs(pacman.getMapX() - this.getMapX())
-        let yDistance = Math.abs(pacman.getMapY() - this.getMapY())
-        if (Math.sqrt(xDistance * xDistance + yDistance * yDistance) <= this.range) {
-            return true;
-        }
-        return false;
-    }
-
-    changeRandomDirection() {
-        this.randomTargetIndex += 1
-        this.randomTargetIndex = this.randomTargetIndex % 4;
-    }
-
     changeDirectionIfPossible() {
         let tempDirection = this.direction;
         this.direction = this.calculateNewDirection(
@@ -127,61 +131,50 @@ class Ghost {
             parseInt(this.target.x / oneBlockSize),
             parseInt(this.target.y / oneBlockSize)
         );
+    
+        // Nếu không thể thay đổi hướng, giữ nguyên hướng cũ
         if (typeof this.direction == "undefined") {
             this.direction = tempDirection;
             return;
         }
-        if (
-            this.getMapY() != this.getMapYRightSide() &&
-            (this.direction == DIRECTION_LEFT ||
-                this.direction == DIRECTION_RIGHT)
-        ) {
-            this.direction = DIRECTION_UP;
-        }
-        if (
-            this.getMapX() != this.getMapXRightSide() &&
-            this.direction == DIRECTION_UP
-        ) {
-            this.direction = DIRECTION_LEFT;
-        }
+    
+        // Kiểm tra va chạm và điều chỉnh hướng nếu cần
         this.moveForwards();
         if (this.checkCollisions()) {
-            this.moveBackwards();
-            this.direction = tempDirection;
+            this.moveBackwards(); // Nếu va chạm, di chuyển ngược lại
+            this.direction = tempDirection; // Quay lại hướng cũ
         } else {
-            this.moveBackwards();
+            this.moveBackwards(); // Nếu không va chạm, di chuyển ngược lại
         }
-        console.log(this.direction);
     }
 
     calculateNewDirection(map, destX, destY) {
         let mp = [];
         for (let i = 0; i < map.length; i++) {
-            mp[i] = map[i].slice()
+            mp[i] = map[i].slice();
         }
-
+    
         let queue = [
             {
-            x: this.getMapX(),
-            y: this.getMapY(),
-            rightX: this.getMapXRightSide(),
-            rightY: this.getMapYRightSide(),
-            moves: [],
-        },];
-
+                x: this.getMapX(),
+                y: this.getMapY(),
+                moves: [],
+            },
+        ];
+    
         while (queue.length > 0) {
-            let poped = queue.shift()
+            let poped = queue.shift();
             if (poped.x == destX && poped.y == destY) {
-                return poped.moves[0]
+                return poped.moves[0]; // Trả về hướng di chuyển
             } else {
-                mp[poped.y][poped.x = 1]
+                mp[poped.y][poped.x] = 1; // Đánh dấu ô đã đi qua
                 let neighborList = this.addNeighbors(poped, mp);
                 for (let i = 0; i < neighborList.length; i++) {
                     queue.push(neighborList[i]);
                 }
             }
         }
-        return 1; // Default
+        return 1; // Trả về hướng mặc định nếu không tìm thấy đường
     }
 
     addNeighbors(poped, mp) {
@@ -282,3 +275,9 @@ let drawGhost = () => {
         ghosts[i].draw();
     }
 }
+
+let updateGhosts = () => {
+    for (let i = 0; i < ghosts.length; i++) {
+        ghosts[i].moveProcesss(); // Gọi hàm moveProcesss cho mỗi ghost
+    }
+};

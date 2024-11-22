@@ -9,6 +9,7 @@ let createRect = (x, y, width, height, color) => {
 }
 
 let fps = 30;
+let pacman;
 let oneBlockSize = 20;
 let wallColor = "#342DCA";
 let wallSpaceWidth = oneBlockSize / 1.5;
@@ -63,7 +64,7 @@ let randomTargetsForGhost = [
     { x: 1 * oneBlockSize, y: (map.length - 2) * oneBlockSize },
     { x: (map[0].length - 2) * oneBlockSize, y: oneBlockSize },
     { x: (map[0].length - 2) * oneBlockSize, y: (map.length - 2) * oneBlockSize },
-]
+];
 
 let gameLoop = () => {
     update();
@@ -74,7 +75,7 @@ let update = () => {
     //todo
     pacman.moveProcess();
     pacman.eat();
-    // ghosts[0].moveProcess();
+    updateGhosts();
 };
 
 let drawFoods = () => {
