@@ -12,11 +12,11 @@ class Ghost {
         this.imageHeight = imageHeight;
         this.range = range;
         this.randomTargetIndex = parseInt(Math.random() * 4);
-        this.target = randomTargetsForGhost[this.randomTargetIndex];
+        this.target = randomTargetsForGhosts[this.randomTargetIndex];
 
         setInterval(() => {
             this.changeRandomDirection();
-        }, 10000);
+        }, 80000);
     }
 
 
@@ -24,38 +24,37 @@ class Ghost {
         let xDistance = Math.abs(pacman.getMapX() - this.getMapX());
         let yDistance = Math.abs(pacman.getMapY() - this.getMapY());
         if (
-            Math.sqrt(xDistance * xDistance + yDistance * yDistance) <= 
+            Math.sqrt(xDistance * xDistance + yDistance * yDistance) <=
             this.range
         ) {
             return true;
         }
         return false;
     }
-   
+
+
     changeRandomDirection() {
         let addition = 1;
         this.randomTargetIndex += addition;
         this.randomTargetIndex = this.randomTargetIndex % 4;
+
+        // this.randomTargetIndex = (this.randomTargetIndex + 1) % randomTargetsForGhost.length;
     }
 
-    moveProcesss() {
+
+    moveProcess() {
         if (this.isInRange()) {
-            this.target = pacman; // Nếu ghost ở gần Pacman, hướng về Pacman
+            this.target = pacman;
         } else {
-            this.target = randomTargetsForGhost[this.randomTargetIndex]; // Nếu không, hướng về mục tiêu ngẫu nhiên
+            this.target = randomTargetsForGhosts[this.randomTargetIndex];
         }
-    
-        // Tính toán hướng di chuyển
         this.changeDirectionIfPossible();
-        this.moveForwards(); // Di chuyển về phía mục tiêu
-    
-        // Kiểm tra va chạm
+        this.moveForwards();
         if (this.checkCollisions()) {
-            this.moveBackwards(); // Nếu va chạm, di chuyển ngược lại
+            this.moveBackwards();
             return;
         }
     }
-
     moveBackwards() {
         switch (this.direction) {
             case DIRECTION_RIGHT: // Right
@@ -111,18 +110,21 @@ class Ghost {
         return isCollided;
     }
 
-    checkGhostCollision(ghosts) {
-        for (let i = 0; i < ghosts.length; i++) {
-            let ghost = ghosts[i];
-            if (
-                ghost.getMapX() == this.getMapX() &&
-                ghost.getMapY() == this.getMapY()
-            ) {
-                return true;
-            }
-        }
-        return false;
-    }
+    // checkGhostCollision(ghosts) {
+    //     for (let i = 0; i < ghosts.length; i++) {
+    //         let ghost = ghosts[i];
+    //         if (
+    //             ghost.getMapX() == this.getMapX() &&
+    //             ghost.getMapY() == this.getMapY()
+    //         ) {
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
+
+
+
 
     changeDirectionIfPossible() {
         let tempDirection = this.direction;
@@ -131,19 +133,19 @@ class Ghost {
             parseInt(this.target.x / oneBlockSize),
             parseInt(this.target.y / oneBlockSize)
         );
-    
+
         // Nếu không thể thay đổi hướng, giữ nguyên hướng cũ
         if (typeof this.direction == "undefined") {
             this.direction = tempDirection;
-            return;
         }
-    
+
         // Kiểm tra va chạm và điều chỉnh hướng nếu cần
         this.moveForwards();
         if (this.checkCollisions()) {
             this.moveBackwards(); // Nếu va chạm, di chuyển ngược lại
             this.direction = tempDirection; // Quay lại hướng cũ
-        } else {
+        }
+        else {
             this.moveBackwards(); // Nếu không va chạm, di chuyển ngược lại
         }
     }
@@ -153,7 +155,7 @@ class Ghost {
         for (let i = 0; i < map.length; i++) {
             mp[i] = map[i].slice();
         }
-    
+
         let queue = [
             {
                 x: this.getMapX(),
@@ -161,7 +163,7 @@ class Ghost {
                 moves: [],
             },
         ];
-    
+
         while (queue.length > 0) {
             let poped = queue.shift();
             if (poped.x == destX && poped.y == destY) {
@@ -267,17 +269,18 @@ class Ghost {
 
         canvasContext.restore();
     };
-   
+
 }
 
 let drawGhost = () => {
-    for (let i = 0; i < ghosts.length; i++){
+    for (let i = 0; i < ghosts.length; i++) {
         ghosts[i].draw();
     }
 }
 
 let updateGhosts = () => {
+    // ghosts[0].moveProcess();
     for (let i = 0; i < ghosts.length; i++) {
-        ghosts[i].moveProcesss(); // Gọi hàm moveProcesss cho mỗi ghost
+        ghosts[i].moveProcess();
     }
-};
+}

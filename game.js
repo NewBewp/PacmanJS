@@ -59,12 +59,27 @@ let map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ];
 
-let randomTargetsForGhost = [
-    { x: 1 * oneBlockSize, y: 1 * oneBlockSize },
-    { x: 1 * oneBlockSize, y: (map.length - 2) * oneBlockSize },
-    { x: (map[0].length - 2) * oneBlockSize, y: oneBlockSize },
+let randomTargetsForGhosts = [
     { x: (map[0].length - 2) * oneBlockSize, y: (map.length - 2) * oneBlockSize },
+    { x: (map[0].length - 2) * oneBlockSize, y: oneBlockSize },
+    { x: 1 * oneBlockSize, y: (map.length - 2) * oneBlockSize },   
+    { x: 1 * oneBlockSize, y: 1 * oneBlockSize },
 ];
+
+
+let isGameOver = false;
+let gameOver = () => {
+    clearInterval(gameInterval); // Dừng vòng lặp game
+    isGameOver = true; // Đánh dấu game đã kết thúc
+    canvasContext.fillStyle = "white";
+    canvasContext.font = "20px Arial";
+    
+    canvasContext.fillText(
+        "GAME OVER",
+        canvas.width / 2 - 50, // Căn giữa
+        canvas.height / 2 // Căn giữa
+    );
+};
 
 let gameLoop = () => {
     update();
@@ -76,6 +91,11 @@ let update = () => {
     pacman.moveProcess();
     pacman.eat();
     updateGhosts();
+
+    if(pacman.checkGhostCollision(ghosts)){
+        gameOver(); // Gọi hàm gameOver
+    }
+
 };
 
 let drawFoods = () => {
@@ -113,7 +133,15 @@ let draw = () => {
     drawScore();
     drawGhost();
     pacman.draw();
-    
+    if (isGameOver) {
+        canvasContext.font = "20px Arial";
+        canvasContext.fillStyle = "white";a
+        canvasContext.fillText(
+            "GAME OVER",
+            canvas.width / 2 - 50, // Căn giữa
+            canvas.height / 2 // Căn giữa
+        );
+    }
 };
 
 let gameInterval = setInterval(gameLoop, 1000 / fps);
